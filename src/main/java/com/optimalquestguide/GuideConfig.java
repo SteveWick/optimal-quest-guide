@@ -67,6 +67,15 @@ public interface GuideConfig extends Config {
     }
 
     @ConfigItem(
+            keyName = "useIronmanGuide",
+            name = "Use Ironman quest guide",
+            description = "Uses the Ironman quest guide ordering"
+    )
+    default boolean useIronmanGuide() {
+        return false;
+    }
+
+    @ConfigItem(
             keyName = "inProgressColor",
             name = "Quest in progress color",
             description = "Color of Quests in progress",

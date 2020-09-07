@@ -44,6 +44,7 @@ import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
 
 import javax.inject.Inject;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -78,10 +79,10 @@ public class GuidePlugin extends Plugin {
 
     @Override
     protected void startUp() throws Exception {
-        // Parse the quests.json to be loaded into the panel.
-        InputStream questDataFile = GuidePlugin.class.getResourceAsStream("/quests.json");
-        infos = new Gson().fromJson(new InputStreamReader(questDataFile), QuestInfo[].class);
+        // Initialize the quest list.
+        initializeQuests(config.useIronmanGuide());
 
+        // Set the guide panel.
         gPanel = new GuidePanel(c, config, infos);
 
         // Setup the icon.
@@ -115,6 +116,15 @@ public class GuidePlugin extends Plugin {
         if (!e.getGroup().equalsIgnoreCase("optimal-quest-guide")) return;
         if (!c.getGameState().equals(GameState.LOGGED_IN)) return;
 
+        // If we changed the mode, re-initialize the quests list.
+        if (e.getKey().equalsIgnoreCase("useironmanguide")) {
+            // Update the quest infos.
+            initializeQuests(config.useIronmanGuide());
+
+            // Invoke to update the quest list.
+            cThread.invokeLater(this::replaceQuestList);
+        }
+
         cThread.invokeLater(this::updateQuestList);
     }
 
@@ -129,6 +139,23 @@ public class GuidePlugin extends Plugin {
                 solution that is potentially more lightweight.
          */
         updateQuestList();
+    }
+
+    private void initializeQuests(boolean ironman) {
+        // Get the quest guide based on the account type.
+        String file = ironman ? "/quests_ironman.json" : "/quests.json";
+
+        // Get the resource from the file.
+        InputStream questDataFile = GuidePlugin.class.getResourceAsStream(file);
+
+        // Parse into infos.
+        infos = new Gson().fromJson(new InputStreamReader(questDataFile), QuestInfo[].class);
+    }
+
+    private void replaceQuestList() {
+        // This is potentially a redundant cThread.invoke to a SwingUtilities.invoke but it works.
+        // I don't know of another way to do this.
+        SwingUtilities.invokeLater(() -> gPanel.replaceQuests(infos));
     }
 
     private void updateQuestList() {

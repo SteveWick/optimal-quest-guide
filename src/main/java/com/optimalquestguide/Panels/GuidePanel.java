@@ -56,6 +56,16 @@ public class GuidePanel extends PluginPanel {
         this.c = c;
         this.config = config;
 
+        replaceQuests(infos);
+    }
+
+    public void replaceQuests(QuestInfo[] infos) {
+        // Replace the old quest map.
+        qMap.clear();
+
+        // Remove any components that might exist.
+        removeAll();
+
         setLayout(new CollapsingGridLayout(infos.length + 2, 1, 0, 2));
 
         ePanel.setContent("Optimal Quest Guide", "Quests will adjust after login.");
